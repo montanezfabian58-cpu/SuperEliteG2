@@ -1,4 +1,4 @@
-const { useEffect, useMemo, useState } = React;
+const { useEffect, useMemo, useRef, useState } = React;
 
 const GROUPS = [
     { id: 'cantantes', label: 'Cantantes', singular: 'Cantante', emoji: '🎤', color: '#2563eb', button: 'from-blue-400 via-blue-600 to-blue-900', border: 'border-blue-400', glow: 'shadow-blue-950/70' },
@@ -24,6 +24,8 @@ const fallbackPhoto = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const getGroup = (id) => GROUPS.find(group => group.id === id) || GROUPS[0];
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+const isGifSource = (src = '') => /^data:image\/gif/i.test(src) || /\.gif(?:[?#]|$)/i.test(src);
+const normalizeMediaType = (type, src = '') => isGifSource(src) ? 'gif' : (type === 'video' ? 'video' : 'image');
 
 function calculateAge(dateString) {
     if (!dateString) return '';
@@ -91,6 +93,8 @@ function App() {
     const [isLoaded, setIsLoaded] = useState(false);
     const [loadError, setLoadError] = useState('');
     const [persistenceStatus, setPersistenceStatus] = useState('');
+    const [player, setPlayer] = useState(null);
+    const [playbackSettings, setPlaybackSettings] = useState({ interval: 5, shuffle: false });
 
     useEffect(() => {
         let isMounted = true;
@@ -137,7 +141,7 @@ function App() {
     const selectedCharacter = view.characterId ? characters.find(character => character.id === view.characterId) : null;
     const groupCharacters = selectedGroup ? characters.filter(character => character.group === selectedGroup.id) : [];
     const selectedCharacterMedia = selectedCharacter ? media.filter(item => item.characterId === selectedCharacter.id) : [];
-    const mediaWithCharacters = useMemo(() => media.map(item => ({ ...item, character: characters.find(character => character.id === item.characterId) })).filter(item => item.character), [media, characters]);
+    const mediaWithCharacters = useMemo(() => media.map(item => ({ ...item, type: normalizeMediaType(item.type, item.src), character: characters.find(character => character.id === item.characterId) })).filter(item => item.character), [media, characters]);
 
     const navigate = (nextView) => setView(nextView);
 
@@ -178,12 +182,17 @@ function App() {
     };
 
     const saveMedia = (payload) => {
-        setMedia(prev => [{ ...payload, id: uid(), createdAt: new Date().toISOString() }, ...prev]);
+        setMedia(prev => [{ ...payload, type: normalizeMediaType(payload.type, payload.src), id: uid(), createdAt: new Date().toISOString() }, ...prev]);
         setMediaModal(null);
     };
 
     const openEditCharacter = (character) => setCharacterModal({ mode: 'edit', character });
     const openNewCharacter = (groupId = 'cantantes') => setCharacterModal({ mode: 'new', character: { ...EMPTY_FORM, group: groupId } });
+    const openPlayer = (items, title) => {
+        if (!items.length) return;
+        setPlayer({ items, title });
+    };
+    const updatePlaybackSettings = (nextSettings) => setPlaybackSettings(prev => ({ ...prev, ...nextSettings }));
 
     return (
         <div className="min-h-screen">
@@ -192,13 +201,14 @@ function App() {
                 {loadError && <div className="mb-5 rounded-2xl border border-yellow-400/50 bg-yellow-500/10 p-4 font-bold text-yellow-100">⚠️ {loadError}</div>}
                 {persistenceStatus && <div className="mb-5 rounded-2xl border border-cyan-400/50 bg-cyan-500/10 p-4 font-bold text-cyan-100">{persistenceStatus}</div>}
                 {view.page === 'characters' && <GroupsScreen onOpenGroup={(groupId) => navigate({ page: 'group', groupId })} />}
-                {view.page === 'gallery' && <GeneralGallery items={mediaWithCharacters} />}
+                {view.page === 'gallery' && <GeneralGallery items={mediaWithCharacters} settings={playbackSettings} onSettingsChange={updatePlaybackSettings} onPlay={() => openPlayer(mediaWithCharacters, 'Galería general')} />}
                 {view.page === 'group' && <GroupScreen group={selectedGroup} characters={groupCharacters} onBack={() => navigate({ page: 'characters' })} onAdd={() => openNewCharacter(selectedGroup.id)} onOpen={(id) => navigate({ page: 'profile', characterId: id })} />}
                 {view.page === 'profile' && selectedCharacter && <ProfileScreen character={selectedCharacter} mediaCount={selectedCharacterMedia.length} onBack={() => navigate({ page: 'group', groupId: selectedCharacter.group })} onGallery={() => navigate({ page: 'characterGallery', characterId: selectedCharacter.id })} onEdit={() => openEditCharacter(selectedCharacter)} onDelete={() => deleteCharacter(selectedCharacter.id)} />}
-                {view.page === 'characterGallery' && selectedCharacter && <CharacterGallery character={selectedCharacter} items={selectedCharacterMedia} onBack={() => navigate({ page: 'profile', characterId: selectedCharacter.id })} onAdd={() => setMediaModal({ character: selectedCharacter })} />}
+                {view.page === 'characterGallery' && selectedCharacter && <CharacterGallery character={selectedCharacter} items={selectedCharacterMedia} settings={playbackSettings} onSettingsChange={updatePlaybackSettings} onPlay={(items) => openPlayer(items, `Galería de ${selectedCharacter.name}`)} onBack={() => navigate({ page: 'profile', characterId: selectedCharacter.id })} onAdd={() => setMediaModal({ character: selectedCharacter })} />}
             </main>
             {characterModal && <CharacterFormModal initial={characterModal.character} onClose={() => setCharacterModal(null)} onSave={saveCharacter} />}
             {mediaModal && <MediaFormModal character={mediaModal.character} onClose={() => setMediaModal(null)} onSave={saveMedia} />}
+            {player && <MediaPlayer items={player.items} title={player.title} settings={playbackSettings} onSettingsChange={updatePlaybackSettings} onClose={() => setPlayer(null)} />}
         </div>
     );
 }
@@ -303,21 +313,62 @@ function ProfileScreen({ character, mediaCount, onBack, onGallery, onEdit, onDel
     );
 }
 
-function CharacterGallery({ character, items, onBack, onAdd }) {
+function CharacterGallery({ character, items, settings, onSettingsChange, onPlay, onBack, onAdd }) {
+    const galleryItems = items.map(item => ({ ...item, type: normalizeMediaType(item.type, item.src), character }));
     return (
         <section>
             <HeaderBar title={`Galería de ${character.name}`} subtitle="Archivos del personaje" onBack={onBack} actionLabel="Agregar archivo" onAction={onAdd} />
-            <MediaGrid items={items.map(item => ({ ...item, character }))} emptyText="Este personaje todavía no tiene multimedia." />
+            <GalleryControls items={galleryItems} settings={settings} onSettingsChange={onSettingsChange} onPlay={() => onPlay(galleryItems)} />
+            <MediaGrid items={galleryItems} emptyText="Este personaje todavía no tiene multimedia." />
         </section>
     );
 }
 
-function GeneralGallery({ items }) {
+function GeneralGallery({ items, settings, onSettingsChange, onPlay }) {
     return (
         <section>
             <SectionTitle eyebrow="Galería general" title="Toda la multimedia" description="Aquí se muestran todos los archivos cargados para todos los personajes." />
+            <GalleryControls items={items} settings={settings} onSettingsChange={onSettingsChange} onPlay={onPlay} />
             <MediaGrid items={items} emptyText="No hay archivos en la galería general." />
         </section>
+    );
+}
+
+function GalleryControls({ items, settings, onSettingsChange, onPlay }) {
+    const [showSettings, setShowSettings] = useState(false);
+    const isEmpty = items.length === 0;
+    return (
+        <div className="mb-6 rounded-3xl border border-white/10 bg-white/5 p-4 metal-shadow">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="text-sm font-black uppercase tracking-[.25em] text-cyan-200">Reproductor multimedia</p>
+                    <p className="mt-1 text-sm font-semibold text-zinc-400">{items.length} archivo(s) listos para reproducción automática.</p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                    <button disabled={isEmpty} onClick={onPlay} className="metal-shadow rounded-2xl bg-gradient-to-br from-emerald-300 via-emerald-600 to-emerald-950 px-5 py-3 font-black disabled:cursor-not-allowed disabled:opacity-40">▶ Play</button>
+                    <button onClick={() => setShowSettings(prev => !prev)} className="metal-shadow rounded-2xl bg-gradient-to-br from-zinc-200 via-zinc-500 to-zinc-900 px-5 py-3 font-black">⚙ Configuración</button>
+                </div>
+            </div>
+            {showSettings && <PlaybackSettingsPanel settings={settings} onSettingsChange={onSettingsChange} compact />}
+        </div>
+    );
+}
+
+function PlaybackSettingsPanel({ settings, onSettingsChange, compact = false }) {
+    return (
+        <div className={`${compact ? 'mt-4' : ''} grid gap-4 rounded-2xl border border-white/10 bg-black/30 p-4 sm:grid-cols-2`}>
+            <label className="grid gap-2 text-sm font-bold text-zinc-200">Cambiar fotos cada
+                <select value={settings.interval} onChange={event => onSettingsChange({ interval: Number(event.target.value) })} className="rounded-xl border border-white/10 bg-zinc-900 p-3 text-white">
+                    <option value={3}>3 segundos</option>
+                    <option value={5}>5 segundos</option>
+                    <option value={10}>10 segundos</option>
+                </select>
+            </label>
+            <label className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-3 text-sm font-black text-zinc-100">
+                <span>🔀 Orden aleatorio</span>
+                <input type="checkbox" checked={settings.shuffle} onChange={event => onSettingsChange({ shuffle: event.target.checked })} className="h-5 w-5 accent-cyan-400" />
+            </label>
+        </div>
     );
 }
 
@@ -331,6 +382,114 @@ function MediaGrid({ items, emptyText }) {
                     <figcaption className="p-4 text-center font-black">{item.character.name}</figcaption>
                 </figure>
             ))}
+        </div>
+    );
+}
+
+function shuffleItems(items) {
+    const shuffled = [...items];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+    }
+    return shuffled;
+}
+
+function decodeGifBytes(src) {
+    if (!src.startsWith('data:image/gif')) return null;
+    const [, payload = ''] = src.split(',');
+    if (!payload) return null;
+    const binary = src.includes(';base64,') ? atob(payload) : decodeURIComponent(payload);
+    return Uint8Array.from(binary, character => character.charCodeAt(0));
+}
+
+function getGifDurationMs(src) {
+    const bytes = decodeGifBytes(src);
+    if (!bytes) return null;
+    let duration = 0;
+    for (let index = 0; index < bytes.length - 9; index += 1) {
+        if (bytes[index] === 0x21 && bytes[index + 1] === 0xf9 && bytes[index + 2] === 0x04) {
+            const delay = bytes[index + 4] | (bytes[index + 5] << 8);
+            duration += (delay || 10) * 10;
+        }
+    }
+    return duration || null;
+}
+
+function MediaPlayer({ items, title, settings, onSettingsChange, onClose }) {
+    const [index, setIndex] = useState(0);
+    const [playlist, setPlaylist] = useState(() => settings.shuffle ? shuffleItems(items) : items);
+    const [showSettings, setShowSettings] = useState(false);
+    const [audioSrc, setAudioSrc] = useState('');
+    const videoRef = useRef(null);
+    const audioRef = useRef(null);
+    const current = playlist[index] || playlist[0];
+
+    const goNext = () => setIndex(prev => playlist.length ? (prev + 1) % playlist.length : 0);
+
+    useEffect(() => {
+        setPlaylist(settings.shuffle ? shuffleItems(items) : items);
+        setIndex(0);
+    }, [items, settings.shuffle]);
+
+    useEffect(() => {
+        if (!current) return undefined;
+        if (current.type === 'video') {
+            const video = videoRef.current;
+            video?.play?.().catch(() => {});
+            return undefined;
+        }
+        const gifDuration = current.type === 'gif' ? getGifDurationMs(current.src) : null;
+        const delay = current.type === 'gif' ? (gifDuration || settings.interval * 1000) : settings.interval * 1000;
+        const timer = window.setTimeout(goNext, delay);
+        return () => window.clearTimeout(timer);
+    }, [current?.id, settings.interval, playlist.length]);
+
+    useEffect(() => {
+        if (!audioRef.current) return;
+        audioRef.current.play().catch(() => {});
+    }, [audioSrc]);
+
+    useEffect(() => () => {
+        if (audioSrc) URL.revokeObjectURL(audioSrc);
+    }, [audioSrc]);
+
+    const pickAudio = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        if (audioSrc) URL.revokeObjectURL(audioSrc);
+        setAudioSrc(URL.createObjectURL(file));
+    };
+
+    if (!current) return null;
+
+    return (
+        <div className="fixed inset-0 z-[60] bg-black text-white">
+            <div className="absolute left-4 right-4 top-4 z-20 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="rounded-2xl bg-black/55 p-4 backdrop-blur-md">
+                    <p className="text-xs font-black uppercase tracking-[.25em] text-cyan-200">{title}</p>
+                    <h2 className="mt-1 text-2xl font-black">{current.character?.name || current.caption}</h2>
+                    <p className="text-sm font-semibold text-zinc-300">{index + 1} / {playlist.length} · {current.type === 'video' ? 'Video: avanza al finalizar' : current.type === 'gif' ? 'GIF: avanza al finalizar' : `${settings.interval}s por foto`}</p>
+                </div>
+                <div className="flex flex-wrap justify-end gap-2">
+                    <label className="cursor-pointer rounded-2xl bg-white/15 px-4 py-3 font-black backdrop-blur-md hover:bg-white/25">🎵 Sonido
+                        <input type="file" accept="audio/*" onChange={pickAudio} className="hidden" />
+                    </label>
+                    <button onClick={() => onSettingsChange({ shuffle: !settings.shuffle })} className={`rounded-2xl px-4 py-3 font-black backdrop-blur-md ${settings.shuffle ? 'bg-cyan-400 text-zinc-950' : 'bg-white/15 hover:bg-white/25'}`}>🔀</button>
+                    <button onClick={() => setShowSettings(prev => !prev)} className="rounded-2xl bg-white/15 px-4 py-3 font-black backdrop-blur-md hover:bg-white/25">⚙</button>
+                    <button onClick={onClose} className="rounded-2xl bg-red-600 px-4 py-3 font-black hover:bg-red-500">✕</button>
+                </div>
+            </div>
+            {showSettings && <div className="absolute right-4 top-28 z-20 w-[min(28rem,calc(100vw-2rem))]"><PlaybackSettingsPanel settings={settings} onSettingsChange={onSettingsChange} /></div>}
+            <div className="flex h-full w-full items-center justify-center">
+                {current.type === 'video' ? (
+                    <video ref={videoRef} key={current.id} src={current.src} controls autoPlay onEnded={goNext} className="max-h-full max-w-full object-contain" />
+                ) : (
+                    <img key={current.id} src={current.src} alt={current.caption || current.character?.name || 'Multimedia'} className="max-h-full max-w-full object-contain" />
+                )}
+            </div>
+            <button onClick={goNext} className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/15 px-5 py-6 text-4xl font-black backdrop-blur-md hover:bg-white/25" aria-label="Siguiente multimedia">›</button>
+            {audioSrc && <audio ref={audioRef} src={audioSrc} loop controls className="absolute bottom-4 left-1/2 z-20 w-[min(36rem,calc(100vw-2rem))] -translate-x-1/2" />}
         </div>
     );
 }
@@ -384,18 +543,19 @@ function MediaFormModal({ character, onClose, onSave }) {
     const onFile = async (event) => {
         const file = event.target.files?.[0];
         if (!file) return;
-        setType(file.type.startsWith('video') ? 'video' : 'image');
-        setSrc(await fileToDataUrl(file));
+        const dataUrl = await fileToDataUrl(file);
+        setType(file.type === 'image/gif' ? 'gif' : (file.type.startsWith('video') ? 'video' : 'image'));
+        setSrc(dataUrl);
     };
     const submit = (event) => {
         event.preventDefault();
         if (!src) return alert('Carga una URL o un archivo.');
-        onSave({ characterId: character.id, src, type, caption: character.name });
+        onSave({ characterId: character.id, src, type: normalizeMediaType(type, src), caption: character.name });
     };
     return (
         <Modal title={`Agregar archivo a ${character.name}`} onClose={onClose}>
             <form onSubmit={submit} className="grid gap-4">
-                <Input label="URL de archivo" type="url" value={src.startsWith('data:') ? '' : src} onChange={value => { setSrc(value); setType(/\.(mp4|webm|ogg)(\?|$)/i.test(value) ? 'video' : 'image'); }} placeholder="https://..." />
+                <Input label="URL de archivo" type="url" value={src.startsWith('data:') ? '' : src} onChange={value => { setSrc(value); setType(/\.(mp4|webm|ogg)(\?|$)/i.test(value) ? 'video' : (isGifSource(value) ? 'gif' : 'image')); }} placeholder="https://..." />
                 <label className="grid gap-2 text-sm font-bold text-zinc-200">Archivo desde dispositivo
                     <input type="file" accept="image/*,video/*" onChange={onFile} className="rounded-xl border border-white/10 bg-white/5 p-3 text-white" />
                 </label>
