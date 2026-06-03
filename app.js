@@ -13,6 +13,7 @@ const EMPTY_FORM = {
 
 const STORAGE_KEY = 'supereliteg2-state-v1';
 const DATA_URL = 'characters.json';
+const CHARACTERS_API_URL = '/api/characters';
 const fallbackPhoto = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
         <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#334155"/><stop offset="1" stop-color="#020617"/></linearGradient></defs>
@@ -66,6 +67,21 @@ async function loadCharactersFromJson() {
     return Array.isArray(data.characters) ? data.characters : [];
 }
 
+async function saveCharactersToJson(characters) {
+    const response = await fetch(CHARACTERS_API_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ characters }),
+    });
+
+    if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || `No se pudo actualizar ${DATA_URL}: ${response.status}`);
+    }
+
+    return response.json();
+}
+
 function App() {
     const [view, setView] = useState({ page: 'characters' });
     const [characters, setCharacters] = useState([]);
@@ -74,6 +90,7 @@ function App() {
     const [mediaModal, setMediaModal] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [loadError, setLoadError] = useState('');
+    const [persistenceStatus, setPersistenceStatus] = useState('');
 
     useEffect(() => {
         let isMounted = true;
@@ -113,8 +130,8 @@ function App() {
 
     useEffect(() => {
         if (!isLoaded) return;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ characters, media }));
-    }, [characters, media, isLoaded]);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ media }));
+    }, [media, isLoaded]);
 
     const selectedGroup = view.groupId ? getGroup(view.groupId) : null;
     const selectedCharacter = view.characterId ? characters.find(character => character.id === view.characterId) : null;
@@ -124,22 +141,40 @@ function App() {
 
     const navigate = (nextView) => setView(nextView);
 
-    const saveCharacter = (payload) => {
-        if (payload.id) {
-            setCharacters(prev => prev.map(character => character.id === payload.id ? { ...character, ...payload } : character));
-        } else {
-            setCharacters(prev => [{ ...payload, id: uid(), createdAt: new Date().toISOString() }, ...prev]);
+    const persistCharacters = async (nextCharacters) => {
+        setPersistenceStatus('Guardando cambios en characters.json...');
+        try {
+            await saveCharactersToJson(nextCharacters);
+            setPersistenceStatus('✅ characters.json actualizado automáticamente.');
+        } catch (error) {
+            console.error(error);
+            setPersistenceStatus('⚠️ Cambio guardado en pantalla, pero no se pudo escribir characters.json. Inicia la app con `node server.js`.');
         }
-        setCharacterModal(null);
-        setView({ page: 'group', groupId: payload.group });
     };
 
-    const deleteCharacter = (characterId) => {
+    const saveCharacter = async (payload) => {
+        let nextCharacters;
+        if (payload.id) {
+            nextCharacters = characters.map(character => character.id === payload.id ? { ...character, ...payload } : character);
+        } else {
+            nextCharacters = [{ ...payload, id: uid(), createdAt: new Date().toISOString() }, ...characters];
+        }
+
+        setCharacters(nextCharacters);
+        setCharacterModal(null);
+        setView({ page: 'group', groupId: payload.group });
+        await persistCharacters(nextCharacters);
+    };
+
+    const deleteCharacter = async (characterId) => {
         const character = characters.find(item => item.id === characterId);
         if (!character || !confirm(`¿Eliminar a ${character.name} y toda su multimedia?`)) return;
-        setCharacters(prev => prev.filter(item => item.id !== characterId));
+        const nextCharacters = characters.filter(item => item.id !== characterId);
+
+        setCharacters(nextCharacters);
         setMedia(prev => prev.filter(item => item.characterId !== characterId));
         setView({ page: 'group', groupId: character.group });
+        await persistCharacters(nextCharacters);
     };
 
     const saveMedia = (payload) => {
@@ -155,6 +190,7 @@ function App() {
             <TopNav currentPage={view.page} onNavigate={navigate} />
             <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
                 {loadError && <div className="mb-5 rounded-2xl border border-yellow-400/50 bg-yellow-500/10 p-4 font-bold text-yellow-100">⚠️ {loadError}</div>}
+                {persistenceStatus && <div className="mb-5 rounded-2xl border border-cyan-400/50 bg-cyan-500/10 p-4 font-bold text-cyan-100">{persistenceStatus}</div>}
                 {view.page === 'characters' && <GroupsScreen onOpenGroup={(groupId) => navigate({ page: 'group', groupId })} />}
                 {view.page === 'gallery' && <GeneralGallery items={mediaWithCharacters} />}
                 {view.page === 'group' && <GroupScreen group={selectedGroup} characters={groupCharacters} onBack={() => navigate({ page: 'characters' })} onAdd={() => openNewCharacter(selectedGroup.id)} onOpen={(id) => navigate({ page: 'profile', characterId: id })} />}
