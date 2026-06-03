@@ -188,9 +188,9 @@ function App() {
     return (
         <div className="min-h-screen">
             <TopNav currentPage={view.page} onNavigate={navigate} />
-            <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-                {loadError && <div className="mb-5 rounded-2xl border border-yellow-400/50 bg-yellow-500/10 p-4 font-bold text-yellow-100">⚠️ {loadError}</div>}
-                {persistenceStatus && <div className="mb-5 rounded-2xl border border-cyan-400/50 bg-cyan-500/10 p-4 font-bold text-cyan-100">{persistenceStatus}</div>}
+            <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+                {loadError && <div className="metal-panel metal-shadow mb-5 rounded-2xl border border-yellow-400/50 p-4 font-bold text-yellow-100">⚠️ {loadError}</div>}
+                {persistenceStatus && <div className="metal-panel metal-shadow mb-5 rounded-2xl border border-cyan-400/50 p-4 font-bold text-cyan-100">{persistenceStatus}</div>}
                 {view.page === 'characters' && <GroupsScreen onOpenGroup={(groupId) => navigate({ page: 'group', groupId })} />}
                 {view.page === 'gallery' && <GeneralGallery items={mediaWithCharacters} />}
                 {view.page === 'group' && <GroupScreen group={selectedGroup} characters={groupCharacters} onBack={() => navigate({ page: 'characters' })} onAdd={() => openNewCharacter(selectedGroup.id)} onOpen={(id) => navigate({ page: 'profile', characterId: id })} />}
@@ -205,15 +205,15 @@ function App() {
 
 function TopNav({ currentPage, onNavigate }) {
     return (
-        <header className="sticky top-0 z-30 border-b border-white/10 bg-zinc-950/90 backdrop-blur-xl">
+        <header className="metal-panel sticky top-0 z-30 border-b border-cyan-200/20 bg-zinc-950/85 backdrop-blur-xl">
             <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
                 <button onClick={() => onNavigate({ page: 'characters' })} className="text-left">
-                    <p className="text-xs font-bold uppercase tracking-[.35em] text-blue-300">SuperEliteG2</p>
-                    <h1 className="text-2xl font-black">Gestor de personajes</h1>
+                    <p className="text-xs font-bold uppercase tracking-[.35em] text-cyan-200">Cabecera oficial</p>
+                    <h1 className="cartoon-title text-4xl leading-none sm:text-5xl">SuperEliteG2</h1>
                 </button>
-                <nav className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/5 p-1">
-                    <button onClick={() => onNavigate({ page: 'characters' })} className={`rounded-xl px-5 py-3 font-black transition ${currentPage !== 'gallery' ? 'bg-white text-zinc-950' : 'text-white hover:bg-white/10'}`}>👥 Personajes</button>
-                    <button onClick={() => onNavigate({ page: 'gallery' })} className={`rounded-xl px-5 py-3 font-black transition ${currentPage === 'gallery' ? 'bg-white text-zinc-950' : 'text-white hover:bg-white/10'}`}>🖼️ Galería</button>
+                <nav className="metal-card metal-shadow grid grid-cols-2 gap-2 rounded-2xl border border-white/20 p-1">
+                    <button onClick={() => onNavigate({ page: 'characters' })} className={`metal-button rounded-xl px-5 py-3 font-black transition ${currentPage !== 'gallery' ? 'bg-gradient-to-br from-cyan-200 via-white to-slate-300 text-zinc-950' : 'bg-gradient-to-br from-slate-700 via-slate-900 to-black text-white hover:bg-white/10'}`}>👥 Personajes</button>
+                    <button onClick={() => onNavigate({ page: 'gallery' })} className={`metal-button rounded-xl px-5 py-3 font-black transition ${currentPage === 'gallery' ? 'bg-gradient-to-br from-cyan-200 via-white to-slate-300 text-zinc-950' : 'bg-gradient-to-br from-slate-700 via-slate-900 to-black text-white hover:bg-white/10'}`}>🖼️ Galería</button>
                 </nav>
             </div>
         </header>
@@ -226,9 +226,9 @@ function GroupsScreen({ onOpenGroup }) {
             <SectionTitle eyebrow="Carpetas" title="Personajes" description="Elige un grupo para ver sus personajes y administrar sus fichas." />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {GROUPS.map(group => (
-                    <button key={group.id} onClick={() => onOpenGroup(group.id)} className={`metal-shadow rounded-3xl bg-gradient-to-br ${group.button} p-8 text-left transition hover:-translate-y-1 hover:scale-[1.02]`}>
+                    <button key={group.id} onClick={() => onOpenGroup(group.id)} className={`metal-button illuminated-card rounded-3xl bg-gradient-to-br ${group.button} p-8 text-left transition hover:-translate-y-1 hover:scale-[1.02]`}>
                         <span className="text-5xl">{group.emoji}</span>
-                        <h2 className="mt-8 text-2xl font-black uppercase tracking-wide">{group.label}</h2>
+                        <h2 className="letter-relief mt-8 text-3xl uppercase tracking-wide">{group.label}</h2>
                         <p className="mt-2 text-sm font-semibold text-white/80">Abrir grupo</p>
                     </button>
                 ))}
@@ -253,11 +253,11 @@ function GroupScreen({ group, characters, onBack, onAdd, onOpen }) {
 function CharacterCard({ character, onClick }) {
     const group = getGroup(character.group);
     return (
-        <button onClick={onClick} className={`metal-card metal-shadow rounded-3xl border-2 ${group.border} ${group.glow} overflow-hidden text-left transition hover:-translate-y-1`} style={{ boxShadow: `0 0 0 1px ${group.color}55, 0 20px 50px rgba(0,0,0,.38), inset 0 1px 1px rgba(255,255,255,.35)` }}>
+        <button onClick={onClick} className={`metal-card metal-shadow illuminated-card rounded-3xl border-2 ${group.border} ${group.glow} overflow-hidden text-left transition hover:-translate-y-1`} style={{ boxShadow: `0 0 0 1px ${group.color}55, 0 20px 50px rgba(0,0,0,.38), inset 0 1px 1px rgba(255,255,255,.35)` }}>
             <div className="relative h-72 overflow-hidden">
                 <img src={character.photo || fallbackPhoto} alt={character.name} className="h-full w-full object-cover" />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-5">
-                    <h3 className="line-clamp-1 text-3xl font-black uppercase tracking-tight">{character.name}</h3>
+                    <h3 className="letter-relief texture-text line-clamp-1 text-4xl uppercase tracking-tight">{character.name}</h3>
                 </div>
             </div>
             <div className="grid grid-cols-2 gap-3 p-5 text-sm font-bold text-zinc-200">
@@ -273,7 +273,7 @@ function ProfileScreen({ character, mediaCount, onBack, onGallery, onEdit, onDel
     return (
         <section>
             <HeaderBar title="Ficha de personaje" subtitle={group.label} onBack={onBack} />
-            <article className={`metal-card metal-shadow mx-auto max-w-4xl overflow-hidden rounded-[2rem] border-2 ${group.border}`}>
+            <article className={`metal-card metal-shadow illuminated-card mx-auto max-w-4xl overflow-hidden rounded-[2rem] border-2 ${group.border}`}>
                 <div className="grid gap-0 md:grid-cols-[minmax(0,1fr)_1.2fr]">
                     <div className="bg-black/35 p-5">
                         <img src={character.photo || fallbackPhoto} alt={character.name} className="h-[32rem] w-full rounded-[1.5rem] object-cover" />
@@ -281,7 +281,7 @@ function ProfileScreen({ character, mediaCount, onBack, onGallery, onEdit, onDel
                     <div className="flex flex-col gap-6 p-6 md:p-8">
                         <div>
                             <p className="text-sm font-black uppercase tracking-[.3em]" style={{ color: group.color }}>{group.emoji} {group.label}</p>
-                            <h2 className="mt-3 text-5xl font-black uppercase leading-none">{character.name}</h2>
+                            <h2 className="letter-relief texture-text mt-3 text-6xl uppercase leading-none">{character.name}</h2>
                         </div>
                         <dl className="grid gap-3 text-base sm:grid-cols-2">
                             <Info label="Fecha de nacimiento" value={character.birthDate || '—'} />
@@ -292,9 +292,9 @@ function ProfileScreen({ character, mediaCount, onBack, onGallery, onEdit, onDel
                             <Info label="Multimedia" value={`${mediaCount} archivo(s)`} />
                         </dl>
                         <div className="mt-auto grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-                            <button onClick={onGallery} className="metal-shadow rounded-2xl bg-gradient-to-br from-fuchsia-500 via-purple-600 to-indigo-900 px-6 py-4 text-lg font-black">📷 Galería de personaje</button>
-                            <button onClick={onEdit} title="Editar" className="metal-shadow rounded-2xl bg-yellow-400 px-5 py-4 text-2xl">✏️</button>
-                            <button onClick={onDelete} title="Eliminar" className="metal-shadow rounded-2xl bg-red-600 px-5 py-4 text-2xl">🗑️</button>
+                            <button onClick={onGallery} className="metal-button rounded-2xl bg-gradient-to-br from-fuchsia-500 via-purple-600 to-indigo-900 px-6 py-4 text-lg font-black">📷 Galería de personaje</button>
+                            <button onClick={onEdit} title="Editar" className="metal-button rounded-2xl bg-gradient-to-br from-yellow-200 via-yellow-400 to-amber-700 px-5 py-4 text-2xl">✏️</button>
+                            <button onClick={onDelete} title="Eliminar" className="metal-button rounded-2xl bg-gradient-to-br from-red-300 via-red-600 to-red-950 px-5 py-4 text-2xl">🗑️</button>
                         </div>
                     </div>
                 </div>
@@ -326,9 +326,9 @@ function MediaGrid({ items, emptyText }) {
     return (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {items.map(item => (
-                <figure key={item.id} className="metal-card metal-shadow overflow-hidden rounded-3xl border border-white/10">
+                <figure key={item.id} className="metal-card metal-shadow illuminated-card overflow-hidden rounded-3xl border border-white/20">
                     {item.type === 'video' ? <video src={item.src} controls className="h-72 w-full bg-black object-cover" /> : <img src={item.src} alt={item.caption || item.character.name} className="h-72 w-full object-cover" />}
-                    <figcaption className="p-4 text-center font-black">{item.character.name}</figcaption>
+                    <figcaption className="letter-relief texture-text p-4 text-center text-2xl">{item.character.name}</figcaption>
                 </figure>
             ))}
         </div>
@@ -364,11 +364,11 @@ function CharacterFormModal({ initial, onClose, onSave }) {
                 <Input label="Altura" value={form.height} onChange={value => setField('height', value)} placeholder="Ej: 1.70 m" />
                 <Input label="Foto por URL" type="url" value={form.photo.startsWith('data:') ? '' : form.photo} onChange={value => setField('photo', value)} placeholder="https://..." />
                 <label className="grid gap-2 text-sm font-bold text-zinc-200">Foto desde dispositivo
-                    <input type="file" accept="image/*" onChange={onFile} className="rounded-xl border border-white/10 bg-white/5 p-3 text-white" />
+                    <input type="file" accept="image/*" onChange={onFile} className="rounded-xl border border-white/20 bg-black/30 p-3 text-white shadow-inner outline-none focus:border-cyan-300" />
                 </label>
                 {form.photo && <img src={form.photo} alt="Vista previa" className="h-40 w-full rounded-2xl object-cover" />}
                 <label className="grid gap-2 text-sm font-bold text-zinc-200">Grupo designado
-                    <select value={form.group} onChange={event => setField('group', event.target.value)} className="rounded-xl border border-white/10 bg-zinc-900 p-3 text-white">
+                    <select value={form.group} onChange={event => setField('group', event.target.value)} className="rounded-xl border border-white/20 bg-zinc-900 p-3 text-white shadow-inner outline-none focus:border-cyan-300">
                         {GROUPS.map(group => <option key={group.id} value={group.id}>{group.label}</option>)}
                     </select>
                 </label>
@@ -397,7 +397,7 @@ function MediaFormModal({ character, onClose, onSave }) {
             <form onSubmit={submit} className="grid gap-4">
                 <Input label="URL de archivo" type="url" value={src.startsWith('data:') ? '' : src} onChange={value => { setSrc(value); setType(/\.(mp4|webm|ogg)(\?|$)/i.test(value) ? 'video' : 'image'); }} placeholder="https://..." />
                 <label className="grid gap-2 text-sm font-bold text-zinc-200">Archivo desde dispositivo
-                    <input type="file" accept="image/*,video/*" onChange={onFile} className="rounded-xl border border-white/10 bg-white/5 p-3 text-white" />
+                    <input type="file" accept="image/*,video/*" onChange={onFile} className="rounded-xl border border-white/20 bg-black/30 p-3 text-white shadow-inner outline-none focus:border-cyan-300" />
                 </label>
                 {src && (type === 'video' ? <video src={src} controls className="h-56 rounded-2xl bg-black object-cover" /> : <img src={src} alt="Vista previa" className="h-56 rounded-2xl object-cover" />)}
                 <FormActions onClose={onClose} saveLabel="Agregar archivo" />
@@ -408,32 +408,32 @@ function MediaFormModal({ character, onClose, onSave }) {
 
 function HeaderBar({ title, subtitle, onBack, actionLabel, onAction }) {
     return (
-        <div className="mb-6 flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="metal-panel metal-shadow chrome-border mb-6 flex flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-                {onBack && <button onClick={onBack} className="rounded-2xl bg-white/10 px-4 py-3 font-black hover:bg-white/20">←</button>}
-                <div><h2 className="text-3xl font-black">{title}</h2><p className="text-sm font-semibold text-zinc-400">{subtitle}</p></div>
+                {onBack && <button onClick={onBack} className="metal-button rounded-2xl bg-gradient-to-br from-slate-500 via-slate-800 to-black px-4 py-3 font-black hover:bg-white/20">←</button>}
+                <div><h2 className="letter-relief text-4xl">{title}</h2><p className="text-sm font-semibold text-cyan-100/80">{subtitle}</p></div>
             </div>
-            {actionLabel && <button onClick={onAction} className="metal-shadow rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-600 to-blue-950 px-5 py-4 font-black">＋ {actionLabel}</button>}
+            {actionLabel && <button onClick={onAction} className="metal-button rounded-2xl bg-gradient-to-br from-cyan-300 via-blue-600 to-blue-950 px-5 py-4 font-black">＋ {actionLabel}</button>}
         </div>
     );
 }
 
 function SectionTitle({ eyebrow, title, description }) {
-    return <div className="mb-6"><p className="text-sm font-black uppercase tracking-[.35em] text-blue-300">{eyebrow}</p><h2 className="mt-2 text-4xl font-black">{title}</h2><p className="mt-2 max-w-2xl text-zinc-400">{description}</p></div>;
+    return <div className="metal-panel metal-shadow chrome-border mb-6 rounded-3xl p-6"><p className="text-sm font-black uppercase tracking-[.35em] text-cyan-200">{eyebrow}</p><h2 className="cartoon-title mt-2 text-5xl sm:text-6xl">{title}</h2><p className="mt-2 max-w-2xl text-cyan-50/75">{description}</p></div>;
 }
 
 function EmptyState({ title, text }) {
-    return <div className="rounded-3xl border border-dashed border-white/20 bg-white/5 p-12 text-center"><h3 className="text-2xl font-black">{title}</h3><p className="mt-2 text-zinc-400">{text}</p></div>;
+    return <div className="metal-panel metal-shadow chrome-border rounded-3xl border border-dashed border-white/20 p-12 text-center"><h3 className="letter-relief text-3xl">{title}</h3><p className="mt-2 text-cyan-50/75">{text}</p></div>;
 }
 
 function Info({ label, value }) {
-    return <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><dt className="text-xs font-black uppercase tracking-widest text-zinc-500">{label}</dt><dd className="mt-1 text-xl font-black">{value}</dd></div>;
+    return <div className="metal-card metal-shadow rounded-2xl border border-white/20 p-4"><dt className="text-xs font-black uppercase tracking-widest text-cyan-100/65">{label}</dt><dd className="letter-relief mt-1 text-2xl">{value}</dd></div>;
 }
 
 function Input({ label, value, onChange, type = 'text', ...props }) {
     return (
         <label className="grid gap-2 text-sm font-bold text-zinc-200">{label}
-            <input type={type} value={value} onChange={event => onChange?.(event.target.value)} className="rounded-xl border border-white/10 bg-white/5 p-3 text-white outline-none focus:border-blue-400" {...props} />
+            <input type={type} value={value} onChange={event => onChange?.(event.target.value)} className="rounded-xl border border-white/20 bg-black/30 p-3 text-white shadow-inner outline-none focus:border-cyan-300" {...props} />
         </label>
     );
 }
@@ -441,10 +441,10 @@ function Input({ label, value, onChange, type = 'text', ...props }) {
 function Modal({ title, children, onClose }) {
     return (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4 backdrop-blur-sm">
-            <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950 p-5 metal-shadow">
+            <div className="metal-panel max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/20 p-5 metal-shadow">
                 <div className="mb-5 flex items-center justify-between gap-4">
-                    <h2 className="text-2xl font-black">{title}</h2>
-                    <button onClick={onClose} className="rounded-full bg-white/10 px-4 py-2 font-black hover:bg-white/20">✕</button>
+                    <h2 className="letter-relief text-3xl">{title}</h2>
+                    <button onClick={onClose} className="metal-button rounded-full bg-gradient-to-br from-slate-500 via-slate-800 to-black px-4 py-2 font-black hover:bg-white/20">✕</button>
                 </div>
                 {children}
             </div>
@@ -453,7 +453,7 @@ function Modal({ title, children, onClose }) {
 }
 
 function FormActions({ onClose, saveLabel }) {
-    return <div className="mt-2 grid gap-3 sm:grid-cols-2"><button type="button" onClick={onClose} className="rounded-2xl bg-white/10 px-5 py-4 font-black hover:bg-white/20">Cancelar</button><button type="submit" className="metal-shadow rounded-2xl bg-gradient-to-br from-emerald-400 via-emerald-600 to-emerald-950 px-5 py-4 font-black">{saveLabel}</button></div>;
+    return <div className="mt-2 grid gap-3 sm:grid-cols-2"><button type="button" onClick={onClose} className="metal-button rounded-2xl bg-gradient-to-br from-slate-500 via-slate-800 to-black px-5 py-4 font-black hover:bg-white/20">Cancelar</button><button type="submit" className="metal-button rounded-2xl bg-gradient-to-br from-emerald-300 via-emerald-600 to-emerald-950 px-5 py-4 font-black">{saveLabel}</button></div>;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
