@@ -7,16 +7,10 @@
       "type": "gif"
     },
     {
-      "id": "m-ariana-2",
+      "id": "m-ariana-local",
       "characterId": "ariana-grande",
       "src": "Multimedia/arianagrande.jpg",
       "type": "image"
-    },
-    {
-      "id": "m-ariana-3",
-      "characterId": "ariana-grande",
-      "src": "Multimedia/Justluk.mp4",
-      "type": "video"
     }
   ]
 }
