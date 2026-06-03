@@ -1,0 +1,84 @@
+{
+  "characters": [
+    {
+      "id": "ariana-grande",
+      "name": "Ariana Grande",
+      "birthDate": "1993-06-26",
+      "country": "Estados Unidos",
+      "city": "Florida",
+      "height": "1,53 m",
+      "photo": "",
+      "group": "cantantes"
+    },
+    {
+      "id": "nicki-nicole",
+      "name": "Nicki Nicole",
+      "birthDate": "2000-08-25",
+      "country": "Argentina",
+      "city": "Santa Fe",
+      "height": "1,47 m",
+      "photo": "",
+      "group": "cantantes"
+    },
+    {
+      "id": "emilia-mernes",
+      "name": "Emilia Mernes",
+      "birthDate": "1996-10-29",
+      "country": "Argentina",
+      "city": "Corrientes",
+      "height": "1,64 m",
+      "photo": "",
+      "group": "cantantes"
+    },
+    {
+      "id": "sabrina-carpenter",
+      "name": "Sabrina Carpenter",
+      "birthDate": "1999-05-11",
+      "country": "Estados Unidos",
+      "city": "Pensilvania",
+      "height": "1,52 m",
+      "photo": "",
+      "group": "cantantes"
+    },
+    {
+      "id": "ana-de-armas",
+      "name": "Ana de Armas",
+      "birthDate": "1988-04-30",
+      "country": "Cuba",
+      "city": "La Habana",
+      "height": "1,65 m",
+      "photo": "",
+      "group": "actrices"
+    },
+    {
+      "id": "clara-galle",
+      "name": "Clara Galle",
+      "birthDate": "2002-04-15",
+      "country": "España",
+      "city": "Pamplona",
+      "height": "1,59 m",
+      "photo": "",
+      "group": "actrices"
+    },
+    {
+      "id": "sidney-sweeney",
+      "name": "Sidney Sweeney",
+      "birthDate": "1997-09-12",
+      "country": "Estados Unidos",
+      "city": "Washington",
+      "height": "1,61 m",
+      "photo": "",
+      "group": "actrices"
+    },
+    {
+      "id": "anya-olsen",
+      "name": "Anya Olsen",
+      "birthDate": "1994-09-27",
+      "country": "Estados Unidos",
+      "city": "Nueva York",
+      "height": "1,63 m",
+      "photo": "",
+      "group": "nsfw"
+    }
+  ]
+}
