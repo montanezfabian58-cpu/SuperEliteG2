@@ -346,6 +346,7 @@ function CharacterGallery({ character, items, settings, onSettingsChange, onPlay
     const galleryItems = items.map(item => ({ ...item, type: normalizeMediaType(item.type, item.src), character }));
     return (
         <section>
+            <title="Personajes">
             <HeaderBar title={`Galería de ${character.name}`} subtitle="Archivos del personaje" onBack={onBack} actionLabel="Agregar archivo" onAction={onAdd} />
             <GalleryControls items={galleryItems} settings={settings} onSettingsChange={onSettingsChange} onPlay={() => onPlay(galleryItems)} />
             <MediaGrid items={galleryItems} emptyText="Este personaje todavía no tiene multimedia." />
@@ -356,7 +357,7 @@ function CharacterGallery({ character, items, settings, onSettingsChange, onPlay
 function GeneralGallery({ items, settings, onSettingsChange, onPlay }) {
     return (
         <section>
-            <SectionTitle eyebrow="Galería general" title="Toda la multimedia" description="Aquí se muestran todos los archivos cargados para todos los personajes." />
+            <title="Galería General">
             <GalleryControls items={items} settings={settings} onSettingsChange={onSettingsChange} onPlay={onPlay} />
             <MediaGrid items={items} emptyText="No hay archivos en la galería general." />
         </section>
