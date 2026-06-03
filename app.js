@@ -249,7 +249,6 @@ function TopNav({ currentPage, onNavigate }) {
         <header className="metal-panel sticky top-0 z-30 border-b border-cyan-200/20 bg-zinc-950/85 backdrop-blur-xl">
             <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
                 <button onClick={() => onNavigate({ page: 'characters' })} className="text-left">
-                    <p className="text-xs font-bold uppercase tracking-[.35em] text-cyan-200">Cabecera oficial</p>
                     <h1 className="cartoon-title text-4xl leading-none sm:text-5xl">SuperEliteG2</h1>
                 </button>
                 <nav className="metal-card metal-shadow grid grid-cols-2 gap-2 rounded-2xl border border-white/20 p-1">
@@ -264,7 +263,6 @@ function TopNav({ currentPage, onNavigate }) {
 function GroupsScreen({ onOpenGroup }) {
     return (
         <section>
-            <SectionTitle eyebrow="Carpetas" title="Personajes" description="Elige un grupo para ver sus personajes y administrar sus fichas." />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {GROUPS.map(group => (
                     <button key={group.id} onClick={() => onOpenGroup(group.id)} className={`metal-button illuminated-card rounded-3xl bg-gradient-to-br ${group.button} p-8 text-left transition hover:-translate-y-1 hover:scale-[1.02]`}>
