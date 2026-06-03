@@ -1,13 +1,165 @@
-:root { color-scheme: dark; }
-        body {
-            margin: 0;
-            background:
-                radial-gradient(circle at top left, rgba(59,130,246,.18), transparent 32rem),
-                radial-gradient(circle at bottom right, rgba(239,68,68,.12), transparent 26rem),
-                #101014;
-            color: white;
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-        .metal-shadow { box-shadow: 0 18px 40px rgba(0,0,0,.36), inset 0 1px 1px rgba(255,255,255,.35), inset 0 -1px 8px rgba(0,0,0,.35); }
-        .metal-card { background: linear-gradient(145deg, rgba(255,255,255,.15), rgba(255,255,255,.04) 40%, rgba(0,0,0,.22)); }
-        .line-clamp-1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@500;600;700&display=swap');
+
+:root {
+    color-scheme: dark;
+    --ink: #f8fbff;
+    --chrome-1: rgba(255,255,255,.26);
+    --chrome-2: rgba(148,163,184,.18);
+    --chrome-3: rgba(15,23,42,.78);
+    --cyan-glow: rgba(34,211,238,.35);
+    --violet-glow: rgba(168,85,247,.28);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background:
+        radial-gradient(circle at 16% 6%, rgba(125,211,252,.24), transparent 28rem),
+        radial-gradient(circle at 88% 18%, rgba(244,114,182,.18), transparent 30rem),
+        radial-gradient(circle at 50% 100%, rgba(250,204,21,.12), transparent 28rem),
+        linear-gradient(145deg, #080a12 0%, #111827 45%, #050507 100%);
+    color: var(--ink);
+    font-family: Fredoka, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+        radial-gradient(circle, rgba(255,255,255,.12) 1px, transparent 1px);
+    background-size: 54px 54px, 54px 54px, 120px 120px;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.85), rgba(0,0,0,.18));
+}
+
+button,
+input,
+select,
+textarea { font: inherit; }
+
+button { transform-style: preserve-3d; }
+
+.metal-shadow {
+    box-shadow:
+        0 28px 65px rgba(0,0,0,.46),
+        0 10px 24px rgba(34,211,238,.10),
+        inset 0 1px 1px rgba(255,255,255,.55),
+        inset 0 -10px 22px rgba(0,0,0,.38);
+}
+
+.metal-card,
+.metal-panel {
+    position: relative;
+    isolation: isolate;
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.24), rgba(255,255,255,.05) 28%, rgba(0,0,0,.34) 58%, rgba(255,255,255,.10)),
+        linear-gradient(90deg, rgba(148,163,184,.24), rgba(15,23,42,.65));
+}
+
+.metal-card::before,
+.metal-panel::before,
+.metal-button::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    border-radius: inherit;
+    background:
+        linear-gradient(120deg, rgba(255,255,255,.42), transparent 18%, transparent 72%, rgba(255,255,255,.18)),
+        repeating-linear-gradient(100deg, rgba(255,255,255,.09) 0 1px, rgba(0,0,0,.04) 1px 6px);
+    opacity: .75;
+    pointer-events: none;
+}
+
+.illuminated-card {
+    overflow: hidden;
+}
+
+.illuminated-card::after,
+.metal-panel::after {
+    content: "";
+    position: absolute;
+    inset: -35% -20% auto;
+    height: 54%;
+    z-index: -1;
+    background: radial-gradient(ellipse at center, rgba(255,255,255,.32), rgba(34,211,238,.16) 38%, transparent 68%);
+    filter: blur(18px);
+    opacity: .9;
+    pointer-events: none;
+}
+
+.metal-button {
+    position: relative;
+    isolation: isolate;
+    border: 1px solid rgba(255,255,255,.28);
+    text-shadow: 0 2px 0 rgba(0,0,0,.45), 0 0 12px rgba(255,255,255,.26);
+    box-shadow:
+        0 14px 0 rgba(0,0,0,.26),
+        0 24px 35px rgba(0,0,0,.32),
+        inset 0 2px 1px rgba(255,255,255,.45),
+        inset 0 -10px 18px rgba(0,0,0,.35);
+    transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
+}
+
+.metal-button:hover {
+    filter: saturate(1.18) brightness(1.08);
+    transform: translateY(-3px) rotateX(5deg);
+}
+
+.metal-button:active {
+    transform: translateY(3px) scale(.98);
+    box-shadow:
+        0 6px 0 rgba(0,0,0,.3),
+        0 14px 24px rgba(0,0,0,.35),
+        inset 0 2px 1px rgba(255,255,255,.35),
+        inset 0 -8px 14px rgba(0,0,0,.42);
+}
+
+.cartoon-title,
+.letter-relief {
+    font-family: Bangers, Fredoka, cursive;
+    letter-spacing: .06em;
+    -webkit-text-stroke: 1px rgba(8,13,28,.78);
+    text-shadow:
+        0 1px 0 #fff7ad,
+        0 3px 0 #f97316,
+        0 6px 0 #7c2d12,
+        0 11px 20px rgba(0,0,0,.72),
+        0 0 26px rgba(34,211,238,.38);
+}
+
+.cartoon-title {
+    background: linear-gradient(180deg, #fffef3 0%, #fef08a 22%, #fb923c 48%, #ec4899 75%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.letter-relief {
+    color: #f8fafc;
+}
+
+.texture-text {
+    background-image:
+        linear-gradient(180deg, #ffffff, #dbeafe 38%, #93c5fd 68%, #f9a8d4),
+        repeating-linear-gradient(45deg, rgba(255,255,255,.8) 0 2px, rgba(0,0,0,.14) 2px 5px);
+    background-blend-mode: multiply;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.chrome-border {
+    border: 1px solid rgba(255,255,255,.22);
+    outline: 1px solid rgba(34,211,238,.16);
+    outline-offset: -5px;
+}
+
+.line-clamp-1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
