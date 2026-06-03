@@ -13,6 +13,7 @@ const EMPTY_FORM = {
 
 const STORAGE_KEY = 'supereliteg2-state-v1';
 const DATA_URL = 'characters.json';
+const MEDIA_DATA_URL = 'media.json';
 const CHARACTERS_API_URL = '/api/characters';
 const fallbackPhoto = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
@@ -69,6 +70,29 @@ async function loadCharactersFromJson() {
     return Array.isArray(data.characters) ? data.characters : [];
 }
 
+async function loadMediaFromJson() {
+    try {
+        const response = await fetch(MEDIA_DATA_URL, { cache: 'no-store' });
+        if (!response.ok) return [];
+        const data = await response.json();
+        return Array.isArray(data.media) ? data.media : [];
+    } catch (error) {
+        console.warn('No se pudo cargar media.json, se usará solo localStorage.', error);
+        return [];
+    }
+}
+
+function mergeMedia(jsonMedia, storedMedia) {
+    const merged = new Map();
+    jsonMedia.forEach(item => {
+        if (item.id) merged.set(item.id, item);
+    });
+    storedMedia.forEach(item => {
+        if (item.id) merged.set(item.id, item);
+    });
+    return Array.from(merged.values());
+}
+
 async function saveCharactersToJson(characters) {
     const response = await fetch(CHARACTERS_API_URL, {
         method: 'PUT',
@@ -101,6 +125,7 @@ function App() {
 
         async function loadInitialState() {
             let jsonCharacters = [];
+            let jsonMedia = [];
             let storedCharacters = [];
             let storedMedia = [];
 
@@ -109,6 +134,12 @@ function App() {
             } catch (error) {
                 console.error(error);
                 setLoadError('No se pudo leer characters.json. Abre la página desde un servidor local para permitir la carga del JSON.');
+            }
+
+            try {
+                jsonMedia = await loadMediaFromJson();
+            } catch (error) {
+                console.error(error);
             }
 
             try {
@@ -124,7 +155,7 @@ function App() {
 
             if (!isMounted) return;
             setCharacters(mergeCharacters(jsonCharacters, storedCharacters));
-            setMedia(storedMedia);
+            setMedia(mergeMedia(jsonMedia, storedMedia));
             setIsLoaded(true);
         }
 
